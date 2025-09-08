@@ -1,0 +1,89 @@
+{% load static %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>File Manager</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+  <main class="main-content dashboard-layout">
+    <div class="top-row">
+      <section class="upload-section card">
+        <h2>Upload Files or Folders</h2>
+        <form method="post" enctype="multipart/form-data" class="upload-form">
+          {% csrf_token %}
+          <div class="form-row">
+            <label for="{{ file_form.file.id_for_label }}">File:</label>
+            {{ file_form.file }}
+          </div>
+          <div class="form-row">
+            <label for="{{ file_form.folder.id_for_label }}">Folder:</label>
+            {{ file_form.folder }}
+          </div>
+          <hr class="inner-divider">
+          <div class="form-row">
+            <label><strong>Or select a folder:</strong>
+              <input type="file" name="folder_upload" webkitdirectory directory multiple>
+            </label>
+          </div>
+          <div class="form-row">
+            <label>Allowed file type for uploaded folder:
+              <select name="folder_allowed_type">
+                <option value="csv">CSV</option>
+                <option value="pdf">PDF</option>
+                <option value="json">JSON</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-row">
+            <button type="submit" name="upload_file" class="btn btn-primary">Upload</button>
+          </div>
+        </form>
+      </section>
+      <section class="create-folder-section card">
+        <h2>Create Folder</h2>
+        <form method="post" class="folder-form">
+          {% csrf_token %}
+          <div class="form-row">
+            <label for="{{ folder_form.name.id_for_label }}">Name:</label>
+            {{ folder_form.name }}
+          </div>
+          <div class="form-row">
+            <label for="{{ folder_form.parent.id_for_label }}">Parent Folder:</label>
+            {{ folder_form.parent }}
+          </div>
+          <div class="form-row">
+            <label for="{{ folder_form.allowed_type.id_for_label }}">Allowed File Type:</label>
+            {{ folder_form.allowed_type }}
+          </div>
+          <div class="form-row">
+            <button type="submit" name="create_folder" class="btn btn-secondary">Create Folder</button>
+          </div>
+        </form>
+      </section>
+    </div>
+    <div class="bottom-row">
+      <section class="folders-files-section card">
+        <h2>Folders & Files</h2>
+        <div class="folders-files-flex">
+          <div class="folder-list-panel" id="folder-list-panel">
+            <!-- Folder list will be rendered here -->
+            {% for folder in folders %}
+              <div class="folder-list-item" data-folder-id="{{ folder.id }}">{{ folder.name }}</div>
+            {% endfor %}
+          </div>
+          <div class="folder-detail-panel" id="folder-detail-panel">
+            <!-- Folder details (files/actions) will be rendered here by JS -->
+            <div class="folder-detail-placeholder">Select a folder to view its files.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+  <script>const csrfToken = '{{ csrf_token }}';</script>
+  <script src="{% static 'script.js' %}"></script>
+</body>
+</html>

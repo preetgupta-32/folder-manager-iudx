@@ -1,0 +1,402 @@
+/* CSS Updated: 2025-01-22 - Card sizing fixes */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f7f8fa;
+  margin: 0;
+  padding: 0;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem 2rem 1rem;
+  display: flex;
+  flex-direction: row;
+  gap: 2.2rem;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.upload-section, .create-folder-section, .folder-tree-section {
+  max-width: 340px;
+  min-width: 270px;
+  margin: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  padding: 1.2rem 1.1rem 1.1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  flex: 1 1 0;
+  min-height: 540px;
+}
+
+.upload-section {
+  margin-top: 4rem;
+  min-height: 520px;
+}
+
+.upload-section .inner-divider {
+  border: none;
+  border-top: 2px dotted #b0bec5;
+  margin: 1.2rem 0 1.2rem 0;
+  width: 90%;
+}
+
+.section-divider {
+  display: none;
+}
+
+.upload-section h2, .create-folder-section h2, .folder-tree-section h2 {
+  margin-bottom: 1.1rem;
+  margin-top: 0.2rem;
+}
+
+.upload-form {
+  width: 100%;
+}
+
+.form-row {
+  justify-content: center;
+  margin-bottom: 0.8rem;
+  width: 100%;
+}
+
+.main-content > .card:not(.upload-section) {
+  margin-top: 2.5rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  margin-bottom: 2rem;
+  padding: 2rem 1.5rem;
+}
+
+h2 {
+  margin-top: 0;
+  color: #2d3e50;
+  font-size: 1.4rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+label {
+  font-weight: 500;
+  min-width: 110px;
+  margin-right: 0.3rem;
+}
+
+input[type="text"], select, input[type="file"] {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #b0bec5;
+  border-radius: 5px;
+  font-size: 1rem;
+  background: #f9f9fb;
+  margin-right: 0.3rem;
+}
+
+input[type="file"] {
+  border: none;
+  background: none;
+}
+
+.btn {
+  padding: 0.45rem 1rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 0.3rem;
+}
+
+.btn-primary {
+  background: #1976d2;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #125ea2;
+}
+
+.btn-secondary {
+  background: #607d8b;
+  color: #fff;
+}
+
+.btn-secondary:hover {
+  background: #455a64;
+}
+
+.btn-danger {
+  background: #e53935;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: #b71c1c;
+}
+
+.alert {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+  border-radius: 5px;
+  padding: 0.7rem;
+  margin-bottom: 1.2rem;
+  font-size: 1.05rem;
+  text-align: center;
+}
+
+.folder-tree-section ul {
+  list-style: none;
+  padding-left: 1.2rem;
+}
+
+.folder-tree-section strong[data-folder-id] {
+  color: #1976d2;
+  cursor: pointer;
+  font-size: 1.08rem;
+}
+
+.folder-tree-section li {
+  margin-bottom: 0.5em;
+  padding: 0.2em 0.5em;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.folder-tree-section li:hover {
+  background: #f0f4f8;
+}
+
+.folder-tree-section button, .folder-tree-section a {
+  margin-left: 0.3em;
+  font-size: 0.98em;
+}
+
+.folder-tree-section .select-all-files {
+  margin-right: 0.5em;
+}
+
+.dashboard-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.top-row {
+  display: flex;
+  flex-direction: row;
+  gap: 1.2rem;
+  justify-content: center;
+  align-items: flex-start;
+  margin-bottom: 0;
+  margin-top: 1.2rem;
+}
+
+.bottom-row {
+  margin-top: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.folders-files-section {
+  max-width: 950px;
+  min-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+  overflow-y: auto;
+}
+
+.folders-files-flex {
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  width: 100%;
+}
+
+.folder-list-panel {
+  min-width: 180px;
+  max-width: 220px;
+  border-right: 2px dotted #b0bec5;
+  padding: 1.2rem 0.7rem 1.2rem 0.7rem;
+  background: #f7fafd;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+  max-height: 340px;
+}
+
+.folder-list-item {
+  padding: 0.5em 0.7em;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1.05em;
+  transition: background 0.15s, color 0.15s;
+  color: #2d3e50;
+  font-weight: 500;
+}
+.folder-list-item:hover {
+  background: #e3eaf3;
+}
+.folder-list-item.selected {
+  background: #1976d2;
+  color: #fff;
+}
+
+.folder-detail-panel {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 1.2rem 2.2rem;
+  background: #fff;
+  border-radius: 0 10px 10px 0;
+  min-height: 320px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.folder-detail-placeholder {
+  color: #888;
+  font-size: 1.1em;
+  text-align: center;
+  margin-top: 2.5em;
+}
+
+.dropzone-folder-upload.dragover {
+  background: #e3eaf3 !important;
+  border-color: #1976d2 !important;
+}
+
+@media (max-width: 1000px) {
+  .main-content {
+    flex-direction: column;
+    gap: 0;
+    max-width: 98vw;
+  }
+  .upload-section, .create-folder-section, .folder-tree-section {
+    max-width: 98vw;
+    min-width: 0;
+    margin: 0 auto 1.5rem auto;
+    min-height: unset;
+  }
+  .top-row, .folders-files-flex {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .folder-list-panel {
+    max-width: 100vw;
+    border-right: none;
+    border-bottom: 2px dotted #b0bec5;
+    border-radius: 10px 10px 0 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.7rem 0.7rem 0.7rem 0.7rem;
+  }
+  .folder-detail-panel {
+    border-radius: 0 0 10px 10px;
+    min-height: 180px;
+    padding: 1.2rem 0.7rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-content {
+    padding: 0 0.2rem;
+  }
+  .upload-section, .create-folder-section, .folder-tree-section {
+    padding: 1.3rem 0.5rem 1.1rem 0.5rem;
+  }
+  label {
+    min-width: 90px;
+    font-size: 0.98rem;
+  }
+}
+
+.upload-section {
+  width: 320px;
+  min-width: 240px;
+  max-width: 340px;
+  min-height: 320px;
+  height: 340px;
+  padding: 1.1rem 1.1rem 1.1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  font-size: 0.97em;
+}
+
+.create-folder-section {
+  width: 320px;
+  min-width: 240px;
+  max-width: 340px;
+  min-height: 320px;
+  height: 340px;
+  padding: 1.1rem 1.1rem 1.1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  font-size: 0.97em;
+}
+
+.upload-section * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.create-folder-section * {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.upload-section input[type="file"], .upload-section select, .upload-section input[type="text"],
+.create-folder-section input[type="file"], .create-folder-section select, .create-folder-section input[type="text"] {
+  max-width: 130px;
+  font-size: 0.97em;
+  box-sizing: border-box;
+}
+
+.upload-section label, .upload-section strong,
+.create-folder-section label, .create-folder-section strong {
+  font-size: 0.97em;
+  box-sizing: border-box;
+}
+
+.upload-section, .create-folder-section {
+  margin-top: 0;
+}
+
+.upload-section .form-row,
+.create-folder-section .form-row {
+  justify-content: center;
+  margin-bottom: 1rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.upload-section .folder-form,
+.create-folder-section .folder-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}

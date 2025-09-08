@@ -1,0 +1,45 @@
+{% load custom_filters %}
+<div class="folder-detail-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1em; gap: 0.7em;">
+  <span style="font-size:0.98em; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 160px;">{{ folder.name }}</span>
+  <span style="color:#888; font-size:0.95em; margin-left:0.5em;">{{ folder.allowed_type|upper }}</span>
+  <span style="display: flex; flex-direction: row; gap: 0.7em; align-items: center;">
+    <button data-rename-folder="{{ folder.id }}" class="btn btn-secondary btn-sm" style="font-size:0.97em; padding:0.2em 0.7em;">Rename</button>
+    <button data-delete-folder="{{ folder.id }}" class="btn btn-danger btn-sm" style="font-size:0.97em; padding:0.2em 0.7em;">Delete</button>
+    <a href="{% url 'download_folder' folder.id %}" style="font-size:0.97em;">Download</a>
+  </span>
+</div>
+<div class="dropzone-folder-upload" data-folder-id="{{ folder.id }}"
+     style="border: 2px dashed #b0bec5; border-radius: 7px; padding: 1em; text-align: center; margin-bottom: 1em; background: #f8fafc; cursor: pointer;">
+  <span style="color:#888;">Drag files or a folder here to upload to this folder</span>
+</div>
+{% if folder.files.all %}
+  <ul style="list-style:none; padding-left:0;">
+    <li style="margin-bottom:0.5em; display: flex; align-items: center; gap: 0.7em; flex-wrap: wrap;">
+      <input type="checkbox" class="select-all-files" data-folder-id="{{ folder.id }}"> <strong>Select All</strong>
+      <button class="btn btn-danger btn-sm delete-selected-btn" data-folder-id="{{ folder.id }}" style="margin-left:1em; font-size:0.95em; padding:0.2em 0.7em; min-width: 130px;">Delete Selected</button>
+      <button class="btn btn-secondary btn-sm move-selected-btn" data-folder-id="{{ folder.id }}" style="font-size:0.95em; padding:0.2em 0.7em; min-width: 130px;">Move to Folder</button>
+      <button class="btn btn-secondary btn-sm copy-selected-btn" data-folder-id="{{ folder.id }}" style="font-size:0.95em; padding:0.2em 0.7em; min-width: 130px;">Copy to Folder</button>
+    </li>
+    {% for file in folder.files.all %}
+      <li draggable="true"
+          data-file-id="{{ file.id }}"
+          ondragstart="onDragStart(event)"
+          style="margin-bottom:1.1em; display: flex; align-items: center; gap: 0.7em; border-radius: 5px; transition: background 0.15s; min-height: 2.2em;">
+        <input type="checkbox" class="file-checkbox" data-file-id="{{ file.id }}" data-folder-id="{{ folder.id }}">
+        <span style="flex:1; overflow-wrap: anywhere; font-size:0.97em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 160px; display:inline-block;">{{ file.file.name|basename }}
+          {% if file.config_added %}
+            <span style="color:red;font-weight:bold;">CONFIG ADDED!</span>
+          {% endif %}
+        </span>
+        <span style="display: flex; flex-direction: row; gap: 0.7em; align-items: center; min-width: 180px;">
+          <a href="{% url 'download_file' file.id %}" style="font-size:0.97em;">Download</a>
+          <button data-delete-file="{{ file.id }}" class="btn btn-danger btn-sm" style="font-size:0.97em; padding:0.2em 0.7em;">Delete</button>
+          <button data-copy-file="{{ file.id }}" class="btn btn-secondary btn-sm" style="font-size:0.97em; padding:0.2em 0.7em;">Copy</button>
+          <button data-move-file="{{ file.id }}" class="btn btn-secondary btn-sm" style="font-size:0.97em; padding:0.2em 0.7em;">Move</button>
+        </span>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <div style="color:#888; text-align:center; margin-top:2em;">No files in this folder.</div>
+{% endif %} 
