@@ -1,9 +1,11 @@
 from django.urls import path, include
+
 from .views import (
     upload_page, move_file, rename_folder, delete_folder, delete_file, copy_file,
-    download_file, download_folder, delete_multiple_files, move_multiple_files, 
+    download_file, download_folder, delete_multiple_files, move_multiple_files,
     copy_multiple_files, folder_detail, folder_list_json, upload_to_folder
 )
+
 from .api_urls import api_urlpatterns
 
 urlpatterns = [
@@ -22,4 +24,5 @@ urlpatterns = [
     path('folder-detail/<int:folder_id>/', folder_detail, name='folder_detail'),
     path('folder-list-json/', folder_list_json, name='folder_list_json'),
     path('upload-to-folder/<int:folder_id>/', upload_to_folder, name='upload_to_folder'),
+    
 ] + api_urlpatterns  # Include API endpoints
