@@ -1,0 +1,11 @@
+# .gitignore (basic Python/Django)
+__pycache__/
+*.py[cod]
+*.sqlite3
+venv/
+.env
+*.log
+media/
+uploads/
+db.sqlite3
+.DS_Store
