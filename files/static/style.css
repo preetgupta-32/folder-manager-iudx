@@ -20,29 +20,56 @@ body {
 
 .upload-section, .create-folder-section, .folder-tree-section {
   max-width: 340px;
-  min-width: 270px;
+  min-width: 300px;
   margin: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  padding: 1.2rem 1.1rem 1.1rem 1.1rem;
+  padding: 1.8rem 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   background: #fff;
+  border-radius: 10px;
   flex: 1 1 0;
-  min-height: 540px;
+  height: fit-content;  /* Fit to content */
+  min-height: auto;  /* Remove minimum height constraint */
+  overflow: hidden;  /* Prevent content from going out */
+  box-sizing: border-box;
 }
 
 .upload-section {
-  margin-top: 4rem;
-  min-height: 520px;
+  /* Specific styling for upload section */
+}
+
+.upload-section .form-row {
+  margin-bottom: 1rem;
 }
 
 .upload-section .inner-divider {
+  margin: 1.2rem 0;
+}
+
+.inner-divider {
   border: none;
   border-top: 2px dotted #b0bec5;
-  margin: 1.2rem 0 1.2rem 0;
+  margin: 1.2rem 0;
   width: 90%;
+  align-self: center;
 }
+
+.create-folder-section {
+  /* Specific styling for create folder section */
+}
+
+.create-folder-section .form-row {
+  margin-bottom: 1.2rem;  /* Increased spacing between form rows */
+}
+
+.create-folder-section label {
+  margin-bottom: 0.3rem;
+  display: block;
+}
+
+/* Inner-divider styling moved to new location */
 
 .section-divider {
   display: none;
@@ -53,18 +80,25 @@ body {
   margin-top: 0.2rem;
 }
 
-.upload-form {
+.upload-form, .folder-form {
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .form-row {
-  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-bottom: 0.8rem;
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-.main-content > .card:not(.upload-section) {
-  margin-top: 2.5rem;
+.top-row .card {
+  margin-top: 0 !important;
 }
 
 .card {
@@ -85,17 +119,25 @@ h2 {
 
 label {
   font-weight: 500;
-  min-width: 110px;
-  margin-right: 0.3rem;
+  margin-bottom: 0.4rem;
+  display: block;
+  color: #2d3e50;
 }
 
-input[type="text"], select, input[type="file"] {
+input[type="text"], select, input[type="file"], textarea {
   padding: 0.35rem 0.6rem;
   border: 1px solid #b0bec5;
   border-radius: 5px;
   font-size: 1rem;
   background: #f9f9fb;
-  margin-right: 0.3rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+textarea {
+  min-height: 60px;
+  resize: vertical;
 }
 
 input[type="file"] {
@@ -104,13 +146,15 @@ input[type="file"] {
 }
 
 .btn {
-  padding: 0.45rem 1rem;
+  padding: 0.45rem 1.2rem;
   border: none;
   border-radius: 5px;
   font-size: 1rem;
   cursor: pointer;
   transition: background 0.2s;
-  margin-top: 0.3rem;
+  margin-top: 1rem;
+  align-self: center;
+  min-width: 120px;
 }
 
 .btn-primary {
@@ -191,11 +235,17 @@ input[type="file"] {
 .top-row {
   display: flex;
   flex-direction: row;
-  gap: 1.2rem;
+  gap: 1.5rem;
   justify-content: center;
-  align-items: flex-start;
+  align-items: stretch;  /* Stretch for equal height */
   margin-bottom: 0;
   margin-top: 1.2rem;
+}
+
+.top-row .card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .bottom-row {

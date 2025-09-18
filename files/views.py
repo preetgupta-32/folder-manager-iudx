@@ -16,6 +16,13 @@ def upload_page(request):
     message = None
 
     if request.method == 'POST':
+        print(f"DEBUG: POST request received to upload_page")
+        print(f"DEBUG: POST keys: {list(request.POST.keys())}")
+        print(f"DEBUG: Files: {list(request.FILES.keys())}")
+        print(f"DEBUG: create_folder value = '{request.POST.get('create_folder')}'")
+        print(f"DEBUG: file in FILES = {request.FILES.get('file')}")
+        print(f"DEBUG: folder_upload in FILES = {request.FILES.getlist('folder_upload')}")
+        
         # If folder_upload is present and has files, handle folder upload only
         if request.FILES.getlist('folder_upload'):
             files = request.FILES.getlist('folder_upload')
@@ -52,10 +59,23 @@ def upload_page(request):
                     return redirect('upload_page')
         # If folder form is submitted for creating a new folder
         elif request.POST.get('create_folder'):
+            print(f"DEBUG: =================== FOLDER FORM SUBMISSION ===================")
+            print(f"DEBUG: Raw POST data: {dict(request.POST)}")
+            print(f"DEBUG: create_folder value: {request.POST.get('create_folder')}")
+            
             folder_form = FolderForm(request.POST)
+            print(f"DEBUG: Form is valid: {folder_form.is_valid()}")
+            
             if folder_form.is_valid():
-                folder_form.save()
+                print(f"DEBUG: Form validation passed, saving folder...")
+                folder = folder_form.save()
+                print(f"DEBUG: SUCCESS - Folder created: {folder.name} (ID: {folder.id})")
                 return redirect('upload_page')
+            else:
+                print(f"DEBUG: VALIDATION FAILED - Form errors: {folder_form.errors}")
+                for field, errors in folder_form.errors.items():
+                    print(f"DEBUG:   - {field}: {errors}")
+                message = f"Folder creation failed: {folder_form.errors}"
 
     return render(request, 'upload.html', {
         'folders': folders,
@@ -110,6 +130,14 @@ def delete_folder(request):
 
         try:
             folder = Folder.objects.get(id=folder_id)  # type: ignore
+            
+            # First delete all physical files in this folder
+            for file_obj in folder.files.all():
+                if file_obj.file and os.path.exists(file_obj.file.path):
+                    os.remove(file_obj.file.path)
+                    print(f"DEBUG: Deleted physical file: {file_obj.file.path}")
+            
+            # Delete the folder (this will cascade delete all file records)
             folder.delete()
             return JsonResponse({'status': 'success'})
         except Folder.DoesNotExist:  # type: ignore
@@ -140,8 +168,20 @@ def download_folder(request, folder_id):
 def delete_file(request):
     if request.method=='POST':
         data = json.loads(request.body)
-        UploadedFile.objects.filter(id=data['file_id']).delete()
-        return JsonResponse({'status':'ok'})
+        file_id = data.get('file_id')
+        
+        # Get the file object before deleting to access the file path
+        try:
+            file_obj = UploadedFile.objects.get(id=file_id)
+            # Delete the physical file from storage
+            if file_obj.file and os.path.exists(file_obj.file.path):
+                os.remove(file_obj.file.path)
+                print(f"DEBUG: Deleted physical file: {file_obj.file.path}")
+            # Now delete the database record
+            file_obj.delete()
+            return JsonResponse({'status':'ok'})
+        except UploadedFile.DoesNotExist:
+            return JsonResponse({'status':'error', 'message': 'File not found'})
 
 @csrf_exempt
 def copy_file(request):
@@ -171,7 +211,16 @@ def delete_multiple_files(request):
         import json
         data = json.loads(request.body)
         file_ids = data.get('file_ids', [])
-        UploadedFile.objects.filter(id__in=file_ids).delete()
+        
+        # Get all file objects and delete physical files first
+        files_to_delete = UploadedFile.objects.filter(id__in=file_ids)
+        for file_obj in files_to_delete:
+            if file_obj.file and os.path.exists(file_obj.file.path):
+                os.remove(file_obj.file.path)
+                print(f"DEBUG: Deleted physical file: {file_obj.file.path}")
+        
+        # Now delete the database records
+        files_to_delete.delete()
         return JsonResponse({'status': 'ok'})
 
 @csrf_exempt

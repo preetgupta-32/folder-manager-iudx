@@ -2,8 +2,19 @@ from django.db import models
 from django.contrib.auth.models import User
 import os
 import hashlib
+import shutil
 from django.conf import settings
 from werkzeug.utils import secure_filename
+
+def get_upload_path(instance, filename):
+    """Generate upload path based on folder structure"""
+    if instance.folder and instance.folder.name:
+        # Create folder-based path: uploads/folder_name/filename
+        folder_name = secure_filename(instance.folder.name)
+        return os.path.join('uploads', folder_name, filename)
+    else:
+        # If no folder, store in general uploads directory
+        return os.path.join('uploads', filename)
 
 class Folder(models.Model):
     name = models.CharField(max_length=255)
@@ -19,13 +30,13 @@ class Folder(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     description = models.TextField(blank=True, null=True)
-    is_public = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True)  # Changed to True - all folders are public
 
     def __str__(self):
         return self.name
 
 class UploadedFile(models.Model):
-    file = models.FileField(upload_to='uploads/')
+    file = models.FileField(upload_to=get_upload_path)
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE, null=True, blank=True, related_name='files')
     
     # Integration fields
@@ -34,7 +45,7 @@ class UploadedFile(models.Model):
     file_size = models.BigIntegerField(null=True, blank=True)
     original_name = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True, null=True)
-    is_public = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=True)  # Changed to True - all files are public
     config_added = models.BooleanField(default=False)
     
     # Enhanced processing fields (Flask reference pattern)
@@ -103,6 +114,35 @@ class UploadedFile(models.Model):
         if not self.original_name and self.file:
             self.original_name = self.file.name
         super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        """Override delete to remove physical file from storage"""
+        # Store the file path before deletion
+        file_path = None
+        if self.file:
+            try:
+                file_path = self.file.path
+            except ValueError:
+                # File field has no file associated with it
+                pass
+        
+        # Store processing directory path
+        processing_dir = None
+        if self.processing_hash:
+            processing_dir = os.path.join(settings.MEDIA_ROOT, self.processing_hash)
+        
+        # Call the parent delete method first to remove from database
+        super().delete(*args, **kwargs)
+        
+        # Now delete the physical file after database deletion
+        if file_path and os.path.exists(file_path):
+            os.remove(file_path)
+            print(f"DEBUG: Deleted physical file: {file_path}")
+        
+        # Delete processing directory if it exists
+        if processing_dir and os.path.exists(processing_dir):
+            shutil.rmtree(processing_dir)
+            print(f"DEBUG: Deleted processing directory: {processing_dir}")
 
     def __str__(self):
         return self.original_name or str(self.file.name) if self.file else f"File {self.id}"

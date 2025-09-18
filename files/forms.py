@@ -10,7 +10,7 @@ class FileUploadForm(forms.ModelForm):
     
     class Meta:
         model = UploadedFile
-        fields = ['file', 'folder', 'description', 'is_public']
+        fields = ['file', 'folder', 'description']  # Removed is_public
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -21,12 +21,15 @@ class FileUploadForm(forms.ModelForm):
 class FolderForm(forms.ModelForm):
     class Meta:
         model = Folder
-        fields = ['name', 'parent', 'allowed_type', 'description', 'is_public']
+        fields = ['name', 'parent', 'allowed_type', 'description']  # Removed is_public
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['description'].widget = forms.Textarea(attrs={'rows': 3})
         self.fields['description'].required = False
+        # Make allowed_type not required and set default
+        self.fields['allowed_type'].required = False
+        self.fields['allowed_type'].initial = 'csv'
 
 class ConfigUploadForm(forms.Form):
     config_file = forms.FileField(

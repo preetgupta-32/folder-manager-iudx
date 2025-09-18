@@ -15,7 +15,6 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
@@ -25,11 +24,9 @@ SECRET_KEY = 'django-insecure-m0vj)!c9kr93$zwp3lt40+@3h1nnbq_32w#+30+19&qdph5)%s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,7 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'files', 
+    'files',
 ]
 
 MIDDLEWARE = [
@@ -70,10 +67,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'temp_site.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -81,10 +76,8 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -100,31 +93,73 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
-
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # File upload settings
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-STATIC_URL = '/static/'
+# Enhanced file upload settings (Flask reference pattern)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024   # 50MB
+FILE_UPLOAD_PERMISSIONS = 0o644
 
+# File upload handlers for large files
+FILE_UPLOAD_HANDLERS = [
+    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+]
+
+# Processing settings (Flask reference pattern)
+ENCRYPTION_SETTINGS = {
+    'FERNET_KEY_CACHE_TIMEOUT': 3600,  # 1 hour
+    'MAX_CHUNK_SIZE': 1024 * 1024,     # 1MB chunks
+    'SUPPORTED_ENCRYPTION': ['fernet', 'rsa'],
+    'MAX_FILE_SIZE': 4 * 1024 * 1024 * 1024,  # 4GB like Flask reference
+}
+
+# JWT Token validation settings (Flask reference pattern)
+JWT_SETTINGS = {
+    'PUBLIC_KEY_URL': 'https://authvertx.iudx.io/auth/v1/cert',
+    'EXPECTED_AUDIENCE': 'your-audience',
+    'EXPECTED_ISSUER': 'your-issuer',
+    'ALGORITHMS': ['ES256'],
+}
+
+# Cache settings for processing
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'file-processing-cache',
+    },
+    'file_processing': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / 'tmp' / 'file_cache',
+    }
+}
+
+# Allowed file extensions
+ALLOWED_UPLOAD_EXTENSIONS = ['.csv', '.parquet', '.json', '.txt', '.pdf', '.jpg', '.png', '.docx']
+
+# Processing configuration
+PROCESSING_SETTINGS = {
+    'CHUNK_SIZE': 1000,  # Records per chunk
+    'INFERENCE_TIMEOUT': 300,  # 5 minutes
+    'CONFIG_REQUIRED_FIELDS': ['algorithm', 'parameters'],
+}
+# settings.py
+FLASK_ENCLAVE_URL = 'http://localhost:8001'
+FLASK_USERNAME = 'your_flask_username'
+FLASK_PASSWORD = 'your_flask_password'

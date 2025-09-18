@@ -45,6 +45,16 @@
       </section>
       <section class="create-folder-section card">
         <h2>Create Folder</h2>
+        {% if message %}
+        <div class="message alert">
+          {{ message }}
+        </div>
+        {% endif %}
+        {% if folder_form.errors %}
+        <div class="errors alert alert-error">
+          {{ folder_form.errors }}
+        </div>
+        {% endif %}
         <form method="post" class="folder-form">
           {% csrf_token %}
           <div class="form-row">
@@ -60,7 +70,11 @@
             {{ folder_form.allowed_type }}
           </div>
           <div class="form-row">
-            <button type="submit" name="create_folder" class="btn btn-secondary">Create Folder</button>
+            <label for="{{ folder_form.description.id_for_label }}">Description (Optional):</label>
+            {{ folder_form.description }}
+          </div>
+          <div class="form-row">
+            <button type="submit" name="create_folder" value="1" class="btn btn-secondary">Create Folder</button>
           </div>
         </form>
       </section>
@@ -84,6 +98,42 @@
     </div>
   </main>
   <script>const csrfToken = '{{ csrf_token }}';</script>
+  <script>
+    // Debug form submissions
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Page loaded, setting up form debugging...');
+      
+      // Find the folder creation form
+      const folderForm = document.querySelector('.folder-form');
+      if (folderForm) {
+        console.log('Found folder form:', folderForm);
+        
+        // Add submit event listener
+        folderForm.addEventListener('submit', function(e) {
+          console.log('FOLDER FORM SUBMIT EVENT TRIGGERED!');
+          console.log('Form data:', new FormData(this));
+          console.log('Form action:', this.action || 'default action');
+          console.log('Form method:', this.method);
+          
+          // Don't prevent default - let it submit normally
+          // e.preventDefault(); // DON'T do this
+        });
+        
+        // Add click event to the button specifically
+        const submitBtn = folderForm.querySelector('button[name="create_folder"]');
+        if (submitBtn) {
+          submitBtn.addEventListener('click', function(e) {
+            console.log('CREATE FOLDER BUTTON CLICKED!');
+            console.log('Button type:', this.type);
+            console.log('Button name:', this.name);
+            console.log('Form valid:', folderForm.checkValidity());
+          });
+        }
+      } else {
+        console.error('Folder form not found!');
+      }
+    });
+  </script>
   <script src="{% static 'script.js' %}"></script>
 </body>
 </html>

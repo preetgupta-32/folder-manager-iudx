@@ -155,7 +155,7 @@ def api_create_folder(request):
             parent_id=data.get('parent_id'),
             created_by_id=data.get('user_id'),
             description=data.get('description', ''),
-            is_public=data.get('is_public', False)
+            is_public=data.get('is_public', True)  # Default to True - all folders are public
         )
         
         return JsonResponse({
@@ -177,7 +177,7 @@ def api_upload_file(request):
         folder_id = request.POST.get('folder_id')
         user_id = request.POST.get('user_id')
         description = request.POST.get('description', '')
-        is_public = request.POST.get('is_public', 'false').lower() == 'true'
+        is_public = request.POST.get('is_public', 'true').lower() == 'true'  # Default to True
         process_file = request.POST.get('process', 'false').lower() == 'true'
         
         if 'file' not in request.FILES:
