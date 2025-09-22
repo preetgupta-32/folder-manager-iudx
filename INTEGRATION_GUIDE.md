@@ -246,12 +246,3 @@ curl -X POST "http://localhost:8000/api/files/upload/" \
 
 ---
 
-## Questions to Ask Your Mentors
-
-1. What framework/language is the main project using?
-2. What database system are they using?
-3. Do they have existing file upload functionality?
-4. What's their user authentication system?
-5. Do they prefer API integration or direct database integration?
-6. What are their file storage requirements (local, cloud, CDN)?
-7. Any specific security or permission requirements? 
