@@ -6,11 +6,29 @@ from .views import (
     copy_multiple_files, folder_detail, folder_list_json, upload_to_folder
 )
 
+from .auth_views import (
+    login_view, logout_view, register_view, profile_view,
+    api_login, api_register
+)
+
 from .api_urls import api_urlpatterns
 
 urlpatterns = [
-    # Web interface URLs
-    path('', upload_page, name='upload_page'),
+    # Default homepage - redirect to login if not authenticated
+    path('', login_view, name='home'),
+    
+    # Authentication URLs
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('register/', register_view, name='register'),
+    path('profile/', profile_view, name='profile'),
+    
+    # API Authentication
+    path('api/auth/login/', api_login, name='api_login'),
+    path('api/auth/register/', api_register, name='api_register'),
+    
+    # Web interface URLs - main app
+    path('dashboard/', upload_page, name='upload_page'),
     path('move-file/', move_file),
     path('rename-folder/', rename_folder),
     path('delete-folder/', delete_folder),

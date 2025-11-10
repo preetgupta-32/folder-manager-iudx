@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Profile - File Manager{% endblock %}
+
+{% block extra_css %}
+<style>
+    .profile-container {
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+    }
+    
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 3rem 2rem;
+        text-align: center;
+        color: white;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: white;
+        color: #667eea;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin: 0 auto 1rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+    }
+    
+    .profile-name {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+    
+    .profile-role {
+        background: rgba(255, 255, 255, 0.2);
+        display: inline-block;
+        padding: 0.25rem 1rem;
+        border-radius: 9999px;
+        font-weight: 500;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        padding: 2rem;
+    }
+    
+    .stat-card {
+        background: #f7fafc;
+        padding: 1.5rem;
+        border-radius: 0.75rem;
+        border-left: 4px solid #667eea;
+    }
+    
+    .stat-label {
+        color: #718096;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #2d3748;
+    }
+    
+    .recent-files {
+        padding: 2rem;
+    }
+    
+    .recent-files h3 {
+        margin-bottom: 1.5rem;
+        color: #2d3748;
+    }
+    
+    .files-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .files-table th {
+        background: #f7fafc;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: #4a5568;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .files-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .files-table tr:hover {
+        background: #f7fafc;
+    }
+    
+    .file-name {
+        font-weight: 500;
+        color: #2d3748;
+    }
+    
+    .file-folder {
+        background: #edf2f7;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        color: #4a5568;
+    }
+    
+    .no-files {
+        text-align: center;
+        padding: 3rem;
+        color: #718096;
+    }
+    
+    .action-buttons {
+        padding: 2rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        background: #f7fafc;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-header">
+        <div class="profile-avatar">
+            {{ user.username.0|upper }}
+        </div>
+        <div class="profile-name">{{ user.username }}</div>
+        {% if is_admin %}
+            <span class="profile-role">Administrator</span>
+        {% else %}
+            <span class="profile-role">User</span>
+        {% endif %}
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Folders</div>
+            <div class="stat-value">{{ folder_count }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Total Files</div>
+            <div class="stat-value">{{ file_count }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Total Storage</div>
+            <div class="stat-value">{{ total_size|filesizeformat }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Account Type</div>
+            <div class="stat-value">
+                {% if is_admin %}
+                    Admin
+                {% else %}
+                    Standard
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="recent-files">
+        <h3>Recent Files</h3>
+        {% if recent_files %}
+            <table class="files-table">
+                <thead>
+                    <tr>
+                        <th>File Name</th>
+                        <th>Folder</th>
+                        <th>Size</th>
+                        <th>Uploaded</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for file in recent_files %}
+                    <tr>
+                        <td class="file-name">{{ file.original_name|default:file.file.name }}</td>
+                        <td>
+                            {% if file.folder %}
+                                <span class="file-folder">{{ file.folder.name }}</span>
+                            {% else %}
+                                <span class="file-folder">No folder</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if file.file_size %}
+                                {{ file.file_size|filesizeformat }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ file.uploaded_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-files">
+                <p>No files uploaded yet</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="action-buttons">
+        <a href="{% url 'upload_page' %}" class="btn btn-primary">Go to Files</a>
+        {% if is_admin %}
+            <a href="/admin/" class="btn btn-secondary">Admin Panel</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

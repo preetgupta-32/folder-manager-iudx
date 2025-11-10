@@ -1,6 +1,11 @@
 {% load custom_filters %}
 <div class="folder-detail-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1em; gap: 0.7em;">
-  <span style="font-size:0.98em; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 160px;">{{ folder.name }}</span>
+  <span style="font-size:0.98em; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width: 160px;">
+    {{ folder.name }}
+    {% if folder.is_public %}
+      <span style="background: #48bb78; color: white; padding: 0.1em 0.4em; border-radius: 3px; font-size: 0.75em; margin-left: 0.3em;">PUBLIC</span>
+    {% endif %}
+  </span>
   <span style="color:#888; font-size:0.95em; margin-left:0.5em;">{{ folder.allowed_type|upper }}</span>
   <span style="display: flex; flex-direction: row; gap: 0.7em; align-items: center;">
     <button data-rename-folder="{{ folder.id }}" class="btn btn-secondary btn-sm" style="font-size:0.97em; padding:0.2em 0.7em;">Rename</button>

@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'files',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -159,7 +161,36 @@ PROCESSING_SETTINGS = {
     'INFERENCE_TIMEOUT': 300,  # 5 minutes
     'CONFIG_REQUIRED_FIELDS': ['algorithm', 'parameters'],
 }
-# settings.py
+# Flask enclave settings
 FLASK_ENCLAVE_URL = 'http://localhost:8001'
 FLASK_USERNAME = 'your_flask_username'
 FLASK_PASSWORD = 'your_flask_password'
+
+# Authentication settings
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
+
+# Titan Server Storage Configuration
+TITAN_SERVER = {
+    'HOST': '192.168.1.250',
+    'USERNAME': 'titan',
+    'PASSWORD': '',  # Will be set when access is provided
+    'BASE_PATH': '/storage/file-manager/',  # Base path on Titan server
+    'USE_SFTP': True,  # Use SFTP for file transfer
+    'PORT': 22,  # SSH/SFTP port
+}
+
+# Toggle for using Titan storage (set to True when Titan is accessible)
+USE_TITAN_STORAGE = False  # Set to True when Titan server is accessible
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}

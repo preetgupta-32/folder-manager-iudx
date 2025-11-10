@@ -25,27 +25,36 @@ class Folder(models.Model):
         default='csv'
     )
 
-    # Integration fields
+    # Integration fields - now required for user-specific access
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='created_folders')
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     description = models.TextField(blank=True, null=True)
-    is_public = models.BooleanField(default=True)  # Changed to True - all folders are public
+    is_public = models.BooleanField(default=False)  # Changed to False - folders are private by default
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.created_by.username if self.created_by else 'No owner'})"
+    
+    def is_accessible_by(self, user):
+        """Check if a user can access this folder"""
+        if user.is_staff or user.is_superuser:
+            return True
+        return self.created_by == user or self.is_public
+    
+    class Meta:
+        ordering = ['name']
 
 class UploadedFile(models.Model):
     file = models.FileField(upload_to=get_upload_path)
     folder = models.ForeignKey(Folder, on_delete=models.CASCADE, null=True, blank=True, related_name='files')
     
-    # Integration fields
+    # Integration fields - now required for user-specific access
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='uploaded_files')
     uploaded_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     file_size = models.BigIntegerField(null=True, blank=True)
     original_name = models.CharField(max_length=255, blank=True)
     description = models.TextField(blank=True, null=True)
-    is_public = models.BooleanField(default=True)  # Changed to True - all files are public
+    is_public = models.BooleanField(default=False)  # Changed to False - files are private by default
     config_added = models.BooleanField(default=False)
     
     # Enhanced processing fields (Flask reference pattern)
@@ -146,3 +155,12 @@ class UploadedFile(models.Model):
 
     def __str__(self):
         return self.original_name or str(self.file.name) if self.file else f"File {self.id}"
+    
+    def is_accessible_by(self, user):
+        """Check if a user can access this file"""
+        if user.is_staff or user.is_superuser:
+            return True
+        return self.uploaded_by == user or self.is_public
+    
+    class Meta:
+        ordering = ['-uploaded_at']

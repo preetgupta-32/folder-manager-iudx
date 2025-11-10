@@ -7,12 +7,27 @@ from .models import Folder, UploadedFile
 from .forms import FolderForm, FileUploadForm
 from django.views.decorators.csrf import csrf_exempt
 from django.template.loader import render_to_string
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.db import models
 
 
+@login_required
 def upload_page(request):
-    folders = Folder.objects.filter(parent=None).prefetch_related('subfolders', 'files')  # type: ignore
-    file_form = FileUploadForm()
-    folder_form = FolderForm()
+    # Filter folders based on user permissions
+    if request.user.is_staff or request.user.is_superuser:
+        # Admin sees all folders
+        folders = Folder.objects.filter(parent=None).prefetch_related('subfolders', 'files')  # type: ignore
+    else:
+        # Regular users see their own folders AND public folders
+        folders = Folder.objects.filter(
+            parent=None
+        ).filter(
+            models.Q(created_by=request.user) | models.Q(is_public=True)
+        ).prefetch_related('subfolders', 'files')  # type: ignore
+    
+    file_form = FileUploadForm(user=request.user)
+    folder_form = FolderForm(user=request.user)
     message = None
 
     if request.method == 'POST':
@@ -33,9 +48,15 @@ def upload_page(request):
             # Get the allowed type from the form
             allowed_type = request.POST.get('folder_allowed_type', 'csv')
             # Check if a root folder with this name exists
-            folder_obj, created = Folder.objects.get_or_create(name=top_folder_name, parent=None)  # type: ignore
+            folder_obj, created = Folder.objects.get_or_create(
+                name=top_folder_name, 
+                parent=None,
+                defaults={'created_by': request.user}
+            )  # type: ignore
             # Always update allowed_type to the selected value
             folder_obj.allowed_type = allowed_type
+            if created:
+                folder_obj.created_by = request.user
             folder_obj.save()
             for f in files:
                 ext = f.name.split('.')[-1].lower()
@@ -43,11 +64,15 @@ def upload_page(request):
                     continue  # skip files with wrong extension
                 # Remove the top folder from the file name for storage
                 f.name = '/'.join(f.name.split('/')[1:]) if '/' in f.name else f.name
-                UploadedFile.objects.create(file=f, folder=folder_obj)  # type: ignore
+                UploadedFile.objects.create(
+                    file=f, 
+                    folder=folder_obj,
+                    uploaded_by=request.user
+                )  # type: ignore
             return redirect('upload_page')
         # If a file is uploaded (and not a folder), handle single file upload
         elif request.FILES.get('file'):
-            file_form = FileUploadForm(request.POST, request.FILES)
+            file_form = FileUploadForm(request.POST, request.FILES, user=request.user)
             if file_form.is_valid():
                 f = file_form.save(commit=False)
                 allowed = f.folder.allowed_type if f.folder else None
@@ -55,6 +80,7 @@ def upload_page(request):
                 if allowed and ext != allowed:
                     message = f"Cannot upload .{ext} to folder '{f.folder.name}' (allowed: .{allowed})"
                 else:
+                    f.uploaded_by = request.user
                     f.save()
                     return redirect('upload_page')
         # If folder form is submitted for creating a new folder
@@ -63,13 +89,16 @@ def upload_page(request):
             print(f"DEBUG: Raw POST data: {dict(request.POST)}")
             print(f"DEBUG: create_folder value: {request.POST.get('create_folder')}")
             
-            folder_form = FolderForm(request.POST)
+            folder_form = FolderForm(request.POST, user=request.user)
             print(f"DEBUG: Form is valid: {folder_form.is_valid()}")
             
             if folder_form.is_valid():
                 print(f"DEBUG: Form validation passed, saving folder...")
-                folder = folder_form.save()
+                folder = folder_form.save(commit=False)
+                folder.created_by = request.user
+                folder.save()
                 print(f"DEBUG: SUCCESS - Folder created: {folder.name} (ID: {folder.id})")
+                messages.success(request, f"Folder '{folder.name}' created successfully!")
                 return redirect('upload_page')
             else:
                 print(f"DEBUG: VALIDATION FAILED - Form errors: {folder_form.errors}")
@@ -86,6 +115,7 @@ def upload_page(request):
 
 
 @csrf_exempt
+@login_required
 def move_file(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -95,6 +125,12 @@ def move_file(request):
         try:
             file = UploadedFile.objects.get(id=file_id)  # type: ignore
             folder = Folder.objects.get(id=folder_id)  # type: ignore
+            # Check permissions: user can move their own files to their own folders OR public folders
+            if not (request.user.is_staff or request.user.is_superuser):
+                if file.uploaded_by != request.user:
+                    return JsonResponse({'status': 'error', 'message': 'You can only move your own files'})
+                if not (folder.created_by == request.user or folder.is_public):
+                    return JsonResponse({'status': 'error', 'message': 'You can only move files to your own folders or public folders'})
             # Only allow move if file extension matches folder.allowed_type
             ext = file.file.name.split('.')[-1].lower()
             if folder.allowed_type and ext != folder.allowed_type:
@@ -107,6 +143,7 @@ def move_file(request):
 
 
 @csrf_exempt
+@login_required
 def rename_folder(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -115,6 +152,9 @@ def rename_folder(request):
 
         try:
             folder = Folder.objects.get(id=folder_id)  # type: ignore
+            # Check permissions: user can only rename their own folders
+            if not (request.user.is_staff or request.user.is_superuser or folder.created_by == request.user):
+                return JsonResponse({'status': 'error', 'message': 'Permission denied'})
             folder.name = new_name
             folder.save()
             return JsonResponse({'status': 'success'})
@@ -123,6 +163,7 @@ def rename_folder(request):
 
 
 @csrf_exempt
+@login_required
 def delete_folder(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -130,6 +171,9 @@ def delete_folder(request):
 
         try:
             folder = Folder.objects.get(id=folder_id)  # type: ignore
+            # Check permissions: user can only delete their own folders
+            if not (request.user.is_staff or request.user.is_superuser or folder.created_by == request.user):
+                return JsonResponse({'status': 'error', 'message': 'Permission denied'})
             
             # First delete all physical files in this folder
             for file_obj in folder.files.all():
@@ -144,8 +188,13 @@ def delete_folder(request):
             return JsonResponse({'status': 'error', 'message': 'Folder not found'})
 
 
+@login_required
 def download_file(request, file_id):
     file_obj = get_object_or_404(UploadedFile, id=file_id)  # type: ignore
+    # Check permissions
+    if not file_obj.is_accessible_by(request.user):
+        messages.error(request, "You don't have permission to access this file.")
+        return redirect('upload_page')
     file_path = file_obj.file.path
     with open(file_path, 'rb') as f:
         response = HttpResponse(f.read(), content_type='application/octet-stream')
@@ -153,8 +202,13 @@ def download_file(request, file_id):
         return response
 
 
+@login_required
 def download_folder(request, folder_id):
     folder = get_object_or_404(Folder, id=folder_id)
+    # Check permissions
+    if not folder.is_accessible_by(request.user):
+        messages.error(request, "You don't have permission to access this folder.")
+        return redirect('upload_page')
     zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w') as zf:
         for uf in folder.files.all():
@@ -165,6 +219,7 @@ def download_folder(request, folder_id):
     return response
 # views.py
 @csrf_exempt
+@login_required
 def delete_file(request):
     if request.method=='POST':
         data = json.loads(request.body)
@@ -173,6 +228,9 @@ def delete_file(request):
         # Get the file object before deleting to access the file path
         try:
             file_obj = UploadedFile.objects.get(id=file_id)
+            # Check if user has permission to delete this file
+            if not (request.user.is_staff or request.user.is_superuser or file_obj.uploaded_by == request.user):
+                return JsonResponse({'status':'error', 'message': 'Permission denied'})
             # Delete the physical file from storage
             if file_obj.file and os.path.exists(file_obj.file.path):
                 os.remove(file_obj.file.path)
@@ -184,6 +242,7 @@ def delete_file(request):
             return JsonResponse({'status':'error', 'message': 'File not found'})
 
 @csrf_exempt
+@login_required
 def copy_file(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -192,12 +251,19 @@ def copy_file(request):
         try:
             file = UploadedFile.objects.get(id=file_id)
             folder = Folder.objects.get(id=folder_id)
+            # Check permissions: user can copy their own files to their own folders OR public folders
+            if not (request.user.is_staff or request.user.is_superuser):
+                if file.uploaded_by != request.user:
+                    return JsonResponse({'status': 'error', 'message': 'You can only copy your own files'})
+                if not (folder.created_by == request.user or folder.is_public):
+                    return JsonResponse({'status': 'error', 'message': 'You can only copy files to your own folders or public folders'})
             ext = file.file.name.split('.')[-1].lower()
             if folder.allowed_type and ext != folder.allowed_type:
                 return JsonResponse({'status': 'error', 'message': f'Cannot copy .{ext} file to folder (allowed: .{folder.allowed_type})'})
             new_file = UploadedFile.objects.get(id=file.id)
             new_file.pk = None
             new_file.folder = folder
+            new_file.uploaded_by = request.user  # Set the current user as uploader of the copy
             new_file.file.name = f"copies/{os.path.basename(file.file.name)}"
             new_file.save()
             return JsonResponse({'status': 'success'})

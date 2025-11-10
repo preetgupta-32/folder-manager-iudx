@@ -30,14 +30,13 @@ body {
   background: #fff;
   border-radius: 10px;
   flex: 1 1 0;
-  height: fit-content;  /* Fit to content */
-  min-height: auto;  /* Remove minimum height constraint */
-  overflow: hidden;  /* Prevent content from going out */
+  overflow: hidden;
   box-sizing: border-box;
 }
 
 .upload-section {
   /* Specific styling for upload section */
+  justify-content: space-between;  /* Distribute content evenly */
 }
 
 .upload-section .form-row {
@@ -46,6 +45,14 @@ body {
 
 .upload-section .inner-divider {
   margin: 1.2rem 0;
+}
+
+.upload-section .upload-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;  /* Allow form to grow */
+  justify-content: space-between;  /* Space out form elements */
 }
 
 .inner-divider {
@@ -58,6 +65,15 @@ body {
 
 .create-folder-section {
   /* Specific styling for create folder section */
+  justify-content: space-between;  /* Distribute content evenly */
+}
+
+.create-folder-section .folder-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;  /* Allow form to grow */
+  justify-content: space-between;  /* Space out form elements */
 }
 
 .create-folder-section .form-row {
@@ -246,6 +262,12 @@ input[type="file"] {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
+  height: 100%;  /* Fill parent height */
+}
+
+.top-row .upload-section,
+.top-row .create-folder-section {
+  align-self: stretch;  /* Ensure cards stretch to match tallest card */
 }
 
 .bottom-row {
@@ -549,4 +571,28 @@ select[name="allowed_type"] {
     width: auto;
     min-width: 100px;
   }
+}
+/* Checkbox styling for is_public field */
+.form-row input[type="checkbox"] {
+  margin-right: 0.5rem;
+  transform: scale(1.2);
+  accent-color: #4c51bf;
+}
+
+.form-row .help-text {
+  display: block;
+  font-size: 0.85rem;
+  color: #718096;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.form-row label {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.form-row label input[type="checkbox"] {
+  margin-right: 0.5rem;
 }

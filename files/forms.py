@@ -13,23 +13,47 @@ class FileUploadForm(forms.ModelForm):
         fields = ['file', 'folder', 'description']  # Removed is_public
 
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         self.fields['file'].required = False
         self.fields['description'].widget = forms.Textarea(attrs={'rows': 3})
         self.fields['description'].required = False
+        
+        # Filter folders to show user's own folders and public folders (or all for admin)
+        if user:
+            if user.is_staff or user.is_superuser:
+                self.fields['folder'].queryset = Folder.objects.all()
+            else:
+                from django.db import models
+                self.fields['folder'].queryset = Folder.objects.filter(
+                    models.Q(created_by=user) | models.Q(is_public=True)
+                )
 
 class FolderForm(forms.ModelForm):
     class Meta:
         model = Folder
-        fields = ['name', 'parent', 'allowed_type', 'description']  # Removed is_public
+        fields = ['name', 'parent', 'allowed_type', 'is_public']
         
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        self.fields['description'].widget = forms.Textarea(attrs={'rows': 3})
-        self.fields['description'].required = False
         # Make allowed_type not required and set default
         self.fields['allowed_type'].required = False
         self.fields['allowed_type'].initial = 'csv'
+        
+        # Add help text and styling for is_public field
+        self.fields['is_public'].help_text = "Check this to make the folder visible to all users"
+        self.fields['is_public'].label = "Make Public"
+        
+        # Filter parent folders to show user's own folders and public folders (or all for admin)
+        if user:
+            if user.is_staff or user.is_superuser:
+                self.fields['parent'].queryset = Folder.objects.all()
+            else:
+                from django.db import models
+                self.fields['parent'].queryset = Folder.objects.filter(
+                    models.Q(created_by=user) | models.Q(is_public=True)
+                )
 
 class ConfigUploadForm(forms.Form):
     config_file = forms.FileField(

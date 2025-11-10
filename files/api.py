@@ -79,13 +79,17 @@ def initialize_file_processing(file_obj):
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
 def api_folders_list(request):
-    """List all folders with their metadata"""
-    user_id = request.GET.get('user_id')
-    folders = Folder.objects.all()
-    
-    if user_id:
-        folders = folders.filter(created_by_id=user_id)
+    """List folders with proper user permissions"""
+    # Admin users can see all folders, regular users see their own and public folders
+    if request.user.is_staff or request.user.is_superuser:
+        folders = Folder.objects.all()
+    else:
+        from django.db import models
+        folders = Folder.objects.filter(
+            models.Q(created_by=request.user) | models.Q(is_public=True)
+        )
     
     folder_data = []
     for folder in folders:
@@ -105,17 +109,20 @@ def api_folders_list(request):
 
 @csrf_exempt
 @require_http_methods(["GET"])
+@login_required
 def api_files_list(request):
-    """List all files with their metadata and processing status"""
+    """List files with proper user permissions"""
     folder_id = request.GET.get('folder_id')
-    user_id = request.GET.get('user_id')
     
-    files = UploadedFile.objects.all()
+    # Admin users can see all files, regular users see only their own
+    if request.user.is_staff or request.user.is_superuser:
+        files = UploadedFile.objects.all()
+    else:
+        files = UploadedFile.objects.filter(uploaded_by=request.user)
     
+    # Apply folder filter if specified (but still respect user permissions)
     if folder_id:
         files = files.filter(folder_id=folder_id)
-    if user_id:
-        files = files.filter(uploaded_by_id=user_id)
     
     file_data = []
     for file in files:
