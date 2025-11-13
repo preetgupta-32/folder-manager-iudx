@@ -72,7 +72,7 @@ curl -H "Authorization: Token YOUR_TOKEN" \
 
 ## 🔧 Titan Server Setup (When Ready)
 
-1. **Get Credentials** from your mentor for `titan@192.168.1.250`
+1. **Get Credentials**  `titan@192.168.1.***`
 
 2. **Update Settings** in `temp_site/settings.py`:
 ```python
